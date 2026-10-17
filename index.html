@@ -80,17 +80,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyB7iISoCwT7H2HHFG130F1-SEW4z4DQPPE",
+const app = initializeApp({
+  apiKey: "AIzaSyB7iISoCwT7H2HHFG13OF1-SEW4z4DQPPE",
   authDomain: "wow-maker-6599c.firebaseapp.com",
   projectId: "wow-maker-6599c",
   storageBucket: "wow-maker-6599c.firebasestorage.app",
   messagingSenderId: "249401398630",
   appId: "1:249401398630:web:c20b1e9399761c3702e4a7"
-};
-
-const app = initializeApp(firebaseConfig);
-  
+});
 const auth = getAuth(app);
 const db = getFirestore(app);
 
