@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0B8F6B">
+<title>Wow Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F7FB;--card:#fff;--ink:#14213D;--muted:#5B6B82;--green:#0B8F6B;--green-d:#08705A;--gold:#FFB703;--err:#B3261E;--line:#D7E0EA}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 Rubik,system-ui,sans-serif;min-height:100vh}
+html[lang=ur] body{font-family:"Noto Nastaliq Urdu",Rubik,system-ui,sans-serif;line-height:2.1}
+.wrap{max-width:440px;margin:0 auto;padding:20px 18px 40px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:22px;direction:ltr;font-family:Rubik,sans-serif;line-height:1.2}
+.sticker{background:var(--gold);color:var(--ink);padding:6px 12px;border-radius:12px;transform:rotate(-5deg);box-shadow:3px 3px 0 var(--ink);font-size:24px}
+.lang{min-height:44px;padding:0 16px;border:2px solid var(--ink);border-radius:22px;background:transparent;color:var(--ink);font:inherit;font-size:15px;cursor:pointer}
+h1{font-size:26px;line-height:1.5;margin:0 0 6px}
+html[lang=ur] h1{line-height:2}
+.sub{color:var(--muted);margin:0 0 22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--bg);padding:5px;border-radius:12px;margin-bottom:18px}
+.tab{min-height:44px;border:0;border-radius:9px;background:transparent;color:var(--muted);font:inherit;font-weight:500;cursor:pointer}
+.tab[aria-selected=true]{background:var(--ink);color:#fff}
+label{display:block;font-weight:500;margin:12px 0 4px}
+input{width:100%;min-height:48px;padding:0 14px;border:1.5px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--ink)}
+input[type=email],input[type=password]{direction:ltr;text-align:start}
+html[dir=rtl] input[type=email],html[dir=rtl] input[type=password]{text-align:right}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.go{width:100%;min-height:50px;margin-top:20px;border:0;border-radius:12px;background:var(--green);color:#fff;font:inherit;font-weight:700;font-size:17px;cursor:pointer}
+.go:hover{background:var(--green-d)}
+.go:disabled{opacity:.6;cursor:wait}
+.msg{margin:14px 0 0;color:var(--err);font-weight:500;min-height:1.5em}
+.out{margin-top:18px;min-height:46px;padding:0 18px;border:2px solid var(--ink);border-radius:12px;background:transparent;color:var(--ink);font:inherit;font-weight:500;cursor:pointer}
+.hi{font-size:24px;font-weight:700;margin:0 0 4px;word-break:break-word}
+h2{font-size:20px;margin:26px 0 0}
+.up{margin:18px 0 0}
+.up h2{margin:0}
+input[type=file]{padding:10px 12px;height:auto;min-height:48px}
+.prog{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:14px}
+.prog i{display:block;height:100%;width:0;background:var(--green)}
+.ok{color:var(--green)!important}
+.vid{margin-top:14px}
+video{width:100%;max-height:60vh;border-radius:12px;background:#000;display:block}
+.vt{font-weight:700;margin:10px 0 0;word-break:break-word}
+.va{color:var(--muted);font-size:14px;margin:0}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div class="brand"><span class="sticker">Wow!</span><span>Maker</span></div>
+    <button class="lang" id="lang" type="button">English</button>
+  </header>
+
+  <section id="auth" hidden>
+    <h1 data-i="tagline"></h1>
+    <p class="sub" data-i="sub"></p>
+    <div class="card">
+      <div class="tabs" role="tablist">
+        <button class="tab" id="tab-signup" role="tab" type="button" data-i="signup"></button>
+        <button class="tab" id="tab-login" role="tab" type="button" data-i="login"></button>
+      </div>
+      <form id="form" novalidate>
+        <div id="nameRow"><label for="name" data-i="name"></label><input id="name" type="text" autocomplete="name"></div>
+        <label for="email" data-i="email"></label>
+        <input id="email" type="email" autocomplete="email" inputmode="email">
+        <label for="password" data-i="password"></label>
+        <input id="password" type="password" autocomplete="current-password">
+        <button class="go" id="go" type="submit"></button>
+        <p class="msg" id="msg" role="alert"></p>
+      </form>
+    </div>
+  </section>
+
+  <section id="home" hidden>
+    <div class="card">
+      <p class="hi"><span data-i="welcome"></span> <span id="who"></span></p>
+      <form id="upform" class="up" novalidate>
+        <h2 data-i="upTitle"></h2>
+        <label for="vtitle" data-i="vtitle"></label>
+        <input id="vtitle" type="text" maxlength="80">
+        <label for="file" data-i="choose"></label>
+        <input id="file" type="file" accept="video/*">
+        <button class="go" id="upbtn" type="submit" data-i="upBtn"></button>
+        <div class="prog"><i id="bar"></i></div>
+        <p class="msg" id="upmsg" role="alert"></p>
+      </form>
+      <button class="out" id="logout" type="button" data-i="logout"></button>
+    </div>
+    <h2 data-i="feed"></h2>
+    <div id="feed"></div>
+  </section>
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, setDoc, serverTimestamp, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyB7iISoCwT7H2HHFG13OF1-SEW4z4DQPPE",
+  authDomain: "wow-maker-6599c.firebaseapp.com",
+  projectId: "wow-maker-6599c",
+  storageBucket: "wow-maker-6599c.firebasestorage.app",
+  messagingSenderId: "249401398630",
+  appId: "1:249401398630:web:c20b1e9399761c3702e4a7"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const T = {
+  ur: {
+    tagline: "اپنا ہنر پوری دنیا کو دکھائیں",
+    sub: "ویڈیو بنائیں، شیئر کریں اور فالوورز بڑھائیں۔",
+    signup: "نیا اکاؤنٹ", login: "لاگ اِن",
+    name: "آپ کا نام", email: "ای میل", password: "پاس ورڈ (کم از کم 6 حروف)",
+    goSignup: "اکاؤنٹ بنائیں", goLogin: "لاگ اِن کریں", logout: "لاگ آؤٹ",
+    welcome: "خوش آمدید،", soon: "ویڈیو اپ لوڈ اور فیڈ جلد آ رہے ہیں۔",
+    other: "English",
+    upTitle: "ویڈیو اپ لوڈ کریں", vtitle: "ویڈیو کا عنوان", choose: "ویڈیو چنیں (زیادہ سے زیادہ 50 MB)", upBtn: "اپ لوڈ کریں",
+    feed: "تازہ ویڈیوز", empty: "ابھی کوئی ویڈیو نہیں۔ پہلی ویڈیو آپ ڈالیں!",
+    m: { title: "عنوان لکھیں۔", pick: "ویڈیو چنیں۔", big: "ویڈیو 50 MB سے چھوٹی رکھیں۔", wait: "اپ لوڈ ہو رہی ہے…", done: "ویڈیو شائع ہو گئی!", fail: "اپ لوڈ نہیں ہو سکی۔", feed: "ویڈیوز نہیں کھل سکیں۔" },
+    e: {
+      name: "اپنا نام لکھیں۔",
+      "auth/invalid-email": "ای میل درست نہیں ہے۔",
+      "auth/email-already-in-use": "اس ای میل سے اکاؤنٹ پہلے سے موجود ہے۔ لاگ اِن کریں۔",
+      "auth/weak-password": "پاس ورڈ کم از کم 6 حروف کا رکھیں۔",
+      "auth/missing-password": "پاس ورڈ لکھیں۔",
+      "auth/invalid-credential": "ای میل یا پاس ورڈ غلط ہے۔",
+      "auth/network-request-failed": "انٹرنیٹ چیک کریں اور دوبارہ کوشش کریں۔",
+      "auth/too-many-requests": "بہت زیادہ کوششیں۔ کچھ دیر بعد دوبارہ کوشش کریں۔",
+      other: "کچھ گڑبڑ ہو گئی۔ دوبارہ کوشش کریں۔"
+    }
+  },
+  en: {
+    tagline: "Show your talent to the whole world",
+    sub: "Make videos, share them and grow your followers.",
+    signup: "Sign up", login: "Log in",
+    name: "Your name", email: "Email", password: "Password (at least 6 characters)",
+    goSignup: "Create account", goLogin: "Log in", logout: "Log out",
+    welcome: "Welcome,", soon: "Video upload and the feed are coming soon.",
+    other: "اردو",
+    upTitle: "Upload a video", vtitle: "Video title", choose: "Choose a video (max 50 MB)", upBtn: "Upload",
+    feed: "Latest videos", empty: "No videos yet. Be the first!",
+    m: { title: "Enter a title.", pick: "Choose a video.", big: "Keep the video under 50 MB.", wait: "Uploading…", done: "Video published!", fail: "Upload failed.", feed: "Could not load videos." },
+    e: {
+      name: "Enter your name.",
+      "auth/invalid-email": "That email address is not valid.",
+      "auth/email-already-in-use": "An account with this email already exists. Log in instead.",
+      "auth/weak-password": "Use a password with at least 6 characters.",
+      "auth/missing-password": "Enter your password.",
+      "auth/invalid-credential": "Email or password is wrong.",
+      "auth/network-request-failed": "Check your internet and try again.",
+      "auth/too-many-requests": "Too many attempts. Try again in a little while.",
+      other: "Something went wrong. Please try again."
+    }
+  }
+};
+
+const $ = id => document.getElementById(id);
+let lang = "en", mode = "signup", user = null, lastErr = null;
+try { lang = localStorage.getItem("wm-lang") || ((navigator.language || "").startsWith("ur") ? "ur" : "en"); } catch (e) {}
+
+function render() {
+  const s = T[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ur" ? "rtl" : "ltr";
+  document.querySelectorAll("[data-i]").forEach(el => el.textContent = s[el.dataset.i]);
+  $("lang").textContent = s.other;
+  $("go").textContent = mode === "signup" ? s.goSignup : s.goLogin;
+  $("nameRow").hidden = mode !== "signup";
+  $("password").autocomplete = mode === "signup" ? "new-password" : "current-password";
+  $("tab-signup").setAttribute("aria-selected", mode === "signup");
+  $("tab-login").setAttribute("aria-selected", mode === "login");
+  $("msg").textContent = lastErr ? (s.e[lastErr] || (s.e.other + " [" + lastErr + "]")) : "";
+  $("auth").hidden = !!user;
+  $("home").hidden = !user;
+  if (user) $("who").textContent = user.displayName || user.email;
+}
+
+$("lang").onclick = () => {
+  lang = lang === "ur" ? "en" : "ur";
+  try { localStorage.setItem("wm-lang", lang); } catch (e) {}
+  render();
+};
+$("tab-signup").onclick = () => { mode = "signup"; lastErr = null; render(); };
+$("tab-login").onclick = () => { mode = "login"; lastErr = null; render(); };
+$("logout").onclick = () => signOut(auth);
+
+$("form").onsubmit = async ev => {
+  ev.preventDefault();
+  lastErr = null;
+  const name = $("name").value.trim(), email = $("email").value.trim(), pw = $("password").value;
+  $("go").disabled = true;
+  try {
+    if (mode === "signup") {
+      if (!name) throw { code: "name" };
+      const cred = await createUserWithEmailAndPassword(auth, email, pw);
+      await updateProfile(cred.user, { displayName: name });
+      try {
+        await setDoc(doc(db, "users", cred.user.uid), { name, followers: 0, monetized: false, createdAt: serverTimestamp() });
+      } catch (e) { console.warn("Profile save skipped:", e.code); }
+      user = auth.currentUser;
+    } else {
+      await signInWithEmailAndPassword(auth, email, pw);
+    }
+  } catch (err) {
+    lastErr = err.code || String(err.message || "other").slice(0, 80);
+  }
+  $("go").disabled = false;
+  render();
+};
+
+const CLOUD = "oyfd8lea", PRESET = "wowmaker_unsigned", MAX = 50 * 1024 * 1024;
+const say = (k, ok) => { const m = $("upmsg"); m.className = "msg" + (ok ? " ok" : ""); m.textContent = k ? T[lang].m[k] : ""; };
+
+async function loadFeed() {
+  const box = $("feed");
+  try {
+    const snap = await getDocs(query(collection(db, "videos"), orderBy("createdAt", "desc"), limit(20)));
+    box.textContent = "";
+    if (snap.empty) { const p = document.createElement("p"); p.className = "sub"; p.textContent = T[lang].empty; box.append(p); return; }
+    snap.forEach(d => {
+      const v = d.data(), c = document.createElement("div"), vid = document.createElement("video");
+      c.className = "card vid";
+      vid.controls = true; vid.playsInline = true; vid.preload = "none";
+      vid.poster = v.url.replace("/upload/", "/upload/so_0,w_480,f_jpg/").replace(/\.\w+$/, ".jpg");
+      vid.src = v.url;
+      const t = document.createElement("p"); t.className = "vt"; t.textContent = v.title;
+      const a = document.createElement("p"); a.className = "va"; a.textContent = v.author;
+      c.append(vid, t, a); box.append(c);
+    });
+  } catch (e) { box.textContent = T[lang].m.feed + " [" + (e.code || e.message) + "]"; }
+}
+
+$("upform").onsubmit = ev => {
+  ev.preventDefault();
+  const f = $("file").files[0], title = $("vtitle").value.trim();
+  if (!title) return say("title");
+  if (!f) return say("pick");
+  if (f.size > MAX) return say("big");
+  const fd = new FormData(); fd.append("file", f); fd.append("upload_preset", PRESET);
+  const x = new XMLHttpRequest();
+  x.open("POST", "https://api.cloudinary.com/v1_1/" + CLOUD + "/video/upload");
+  $("upbtn").disabled = true; say("wait");
+  x.upload.onprogress = e => { if (e.lengthComputable) $("bar").style.width = (100 * e.loaded / e.total) + "%"; };
+  x.onerror = () => { $("upbtn").disabled = false; say("fail"); };
+  x.onload = async () => {
+    try {
+      const r = JSON.parse(x.responseText);
+      if (x.status !== 200 || !r.secure_url) throw new Error((r.error && r.error.message) || "upload");
+      await addDoc(collection(db, "videos"), { uid: user.uid, author: user.displayName || user.email.split("@")[0], title, url: r.secure_url, duration: r.duration || 0, views: 0, createdAt: serverTimestamp() });
+      $("upform").reset(); $("bar").style.width = "0"; say("done", true); loadFeed();
+    } catch (e) { console.warn(e); say("fail"); $("upmsg").textContent += " [" + String(e.code || e.message).slice(0, 70) + "]"; }
+    $("upbtn").disabled = false;
+  };
+  x.send(fd);
+};
+
+onAuthStateChanged(auth, u => { user = u; render(); if (u) loadFeed(); });
+render();
+</script>
+</body>
+</html>
