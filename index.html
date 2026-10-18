@@ -48,6 +48,7 @@ input[type=file]{padding:10px 12px;height:auto;min-height:48px}
 video{width:100%;max-height:60vh;border-radius:12px;background:#000;display:block}
 .vt{font-weight:700;margin:10px 0 0;word-break:break-word}
 .va{color:var(--muted);font-size:14px;margin:0}
+summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:500;color:var(--green-d);margin-top:10px}
 </style>
 </head>
 <body>
@@ -80,6 +81,15 @@ video{width:100%;max-height:60vh;border-radius:12px;background:#000;display:bloc
   <section id="home" hidden>
     <div class="card">
       <p class="hi"><span data-i="welcome"></span> <span id="who"></span></p>
+      <details>
+        <summary data-i="nameSum"></summary>
+        <form id="nameform" novalidate>
+          <label for="newname" data-i="nameLabel"></label>
+          <input id="newname" type="text" maxlength="40" autocomplete="name">
+          <button class="out" id="namebtn" type="submit" data-i="nameBtn"></button>
+          <p class="msg" id="namemsg" role="alert"></p>
+        </form>
+      </details>
       <form id="upform" class="up" novalidate>
         <h2 data-i="upTitle"></h2>
         <label for="vtitle" data-i="vtitle"></label>
@@ -100,7 +110,7 @@ video{width:100%;max-height:60vh;border-radius:12px;background:#000;display:bloc
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp, updateDoc, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyB7iISoCwT7H2HHFG13OF1-SEW4z4DQPPE",
@@ -122,9 +132,10 @@ const T = {
     goSignup: "اکاؤنٹ بنائیں", goLogin: "لاگ اِن کریں", logout: "لاگ آؤٹ",
     welcome: "خوش آمدید،", soon: "ویڈیو اپ لوڈ اور فیڈ جلد آ رہے ہیں۔",
     other: "English",
+    nameSum: "اپنا نام بدلیں", nameLabel: "نیا نام", nameBtn: "نام محفوظ کریں",
     upTitle: "ویڈیو اپ لوڈ کریں", vtitle: "ویڈیو کا عنوان", choose: "ویڈیو چنیں (زیادہ سے زیادہ 50 MB)", upBtn: "اپ لوڈ کریں",
     feed: "تازہ ویڈیوز", empty: "ابھی کوئی ویڈیو نہیں۔ پہلی ویڈیو آپ ڈالیں!",
-    m: { title: "عنوان لکھیں۔", pick: "ویڈیو چنیں۔", big: "ویڈیو 50 MB سے چھوٹی رکھیں۔", wait: "اپ لوڈ ہو رہی ہے…", done: "ویڈیو شائع ہو گئی!", fail: "اپ لوڈ نہیں ہو سکی۔", feed: "ویڈیوز نہیں کھل سکیں۔" },
+    m: { nameDone: "نام بدل گیا!", nameFail: "نام نہیں بدل سکا۔", title: "عنوان لکھیں۔", pick: "ویڈیو چنیں۔", big: "ویڈیو 50 MB سے چھوٹی رکھیں۔", wait: "اپ لوڈ ہو رہی ہے…", done: "ویڈیو شائع ہو گئی!", fail: "اپ لوڈ نہیں ہو سکی۔", feed: "ویڈیوز نہیں کھل سکیں۔" },
     e: {
       name: "اپنا نام لکھیں۔",
       "auth/invalid-email": "ای میل درست نہیں ہے۔",
@@ -145,9 +156,10 @@ const T = {
     goSignup: "Create account", goLogin: "Log in", logout: "Log out",
     welcome: "Welcome,", soon: "Video upload and the feed are coming soon.",
     other: "اردو",
+    nameSum: "Change my name", nameLabel: "New name", nameBtn: "Save name",
     upTitle: "Upload a video", vtitle: "Video title", choose: "Choose a video (max 50 MB)", upBtn: "Upload",
     feed: "Latest videos", empty: "No videos yet. Be the first!",
-    m: { title: "Enter a title.", pick: "Choose a video.", big: "Keep the video under 50 MB.", wait: "Uploading…", done: "Video published!", fail: "Upload failed.", feed: "Could not load videos." },
+    m: { nameDone: "Name updated!", nameFail: "Could not change the name.", title: "Enter a title.", pick: "Choose a video.", big: "Keep the video under 50 MB.", wait: "Uploading…", done: "Video published!", fail: "Upload failed.", feed: "Could not load videos." },
     e: {
       name: "Enter your name.",
       "auth/invalid-email": "That email address is not valid.",
@@ -180,7 +192,7 @@ function render() {
   $("msg").textContent = lastErr ? (s.e[lastErr] || (s.e.other + " [" + lastErr + "]")) : "";
   $("auth").hidden = !!user;
   $("home").hidden = !user;
-  if (user) $("who").textContent = user.displayName || user.email;
+  if (user) $("who").textContent = user.displayName || user.email.split("@")[0];
 }
 
 $("lang").onclick = () => {
@@ -260,6 +272,23 @@ $("upform").onsubmit = ev => {
     $("upbtn").disabled = false;
   };
   x.send(fd);
+};
+
+$("nameform").onsubmit = async ev => {
+  ev.preventDefault();
+  const n = $("newname").value.trim(), msg = $("namemsg");
+  msg.className = "msg";
+  if (!n) { msg.textContent = T[lang].e.name; return; }
+  $("namebtn").disabled = true;
+  try {
+    await updateProfile(auth.currentUser, { displayName: n });
+    const ref = doc(db, "users", auth.currentUser.uid);
+    try { await updateDoc(ref, { name: n }); }
+    catch (e) { await setDoc(ref, { name: n, followers: 0, monetized: false, createdAt: serverTimestamp() }); }
+    user = auth.currentUser; render(); $("newname").value = "";
+    msg.className = "msg ok"; msg.textContent = T[lang].m.nameDone;
+  } catch (e) { console.warn(e); msg.textContent = T[lang].m.nameFail + " [" + (e.code || e.message) + "]"; }
+  $("namebtn").disabled = false;
 };
 
 onAuthStateChanged(auth, u => { user = u; render(); if (u) loadFeed(); });
