@@ -49,6 +49,13 @@ video{width:100%;max-height:60vh;border-radius:12px;background:#000;display:bloc
 .vt{font-weight:700;margin:10px 0 0;word-break:break-word}
 .va{color:var(--muted);font-size:14px;margin:0}
 summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:500;color:var(--green-d);margin-top:10px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.bar button{min-height:40px;padding:0 14px;border:2px solid var(--ink);border-radius:20px;background:transparent;color:var(--ink);font:inherit;cursor:pointer}
+.cm{margin-top:10px}
+.cm p{margin:6px 0;font-size:15px;word-break:break-word}
+.cm .row{display:flex;gap:8px;margin-top:8px}
+.cm .row input{flex:1;min-width:0}
+.cm .row button{min-height:48px;padding:0 14px;border:0;border-radius:10px;background:var(--green);color:#fff;font:inherit;cursor:pointer}
 </style>
 </head>
 <body>
@@ -110,7 +117,7 @@ summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weig
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp, updateDoc, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp, updateDoc, collection, addDoc, getDocs, query, orderBy, limit, getDoc, deleteDoc, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyB7iISoCwT7H2HHFG13OF1-SEW4z4DQPPE",
@@ -132,6 +139,7 @@ const T = {
     goSignup: "اکاؤنٹ بنائیں", goLogin: "لاگ اِن کریں", logout: "لاگ آؤٹ",
     welcome: "خوش آمدید،", soon: "ویڈیو اپ لوڈ اور فیڈ جلد آ رہے ہیں۔",
     other: "English",
+    fol: "فالو کریں", unfol: "فالو کر رہے ہیں", flw: "فالوورز", cph: "تبصرہ لکھیں…", csend: "بھیجیں",
     nameSum: "اپنا نام بدلیں", nameLabel: "نیا نام", nameBtn: "نام محفوظ کریں",
     upTitle: "ویڈیو اپ لوڈ کریں", vtitle: "ویڈیو کا عنوان", choose: "ویڈیو چنیں (زیادہ سے زیادہ 50 MB)", upBtn: "اپ لوڈ کریں",
     feed: "تازہ ویڈیوز", empty: "ابھی کوئی ویڈیو نہیں۔ پہلی ویڈیو آپ ڈالیں!",
@@ -156,6 +164,7 @@ const T = {
     goSignup: "Create account", goLogin: "Log in", logout: "Log out",
     welcome: "Welcome,", soon: "Video upload and the feed are coming soon.",
     other: "اردو",
+    fol: "Follow", unfol: "Following", flw: "followers", cph: "Write a comment…", csend: "Send",
     nameSum: "Change my name", nameLabel: "New name", nameBtn: "Save name",
     upTitle: "Upload a video", vtitle: "Video title", choose: "Choose a video (max 50 MB)", upBtn: "Upload",
     feed: "Latest videos", empty: "No videos yet. Be the first!",
@@ -231,6 +240,60 @@ $("form").onsubmit = async ev => {
 const CLOUD = "oyfd8lea", PRESET = "wowmaker_unsigned", MAX = 50 * 1024 * 1024;
 const say = (k, ok) => { const m = $("upmsg"); m.className = "msg" + (ok ? " ok" : ""); m.textContent = k ? T[lang].m[k] : ""; };
 
+const cnt = async p => (await getCountFromServer(collection(db, ...p))).data().count;
+const mk = () => { const b = document.createElement("button"); b.type = "button"; return b; };
+
+function decorate(c, id, v, a) {
+  const me = user.uid, bar = document.createElement("div"), likeB = mk(), comB = mk(), cm = document.createElement("div");
+  bar.className = "bar"; cm.className = "cm"; cm.hidden = true;
+  let liked = false, nl = 0, nc = 0;
+  const lref = doc(db, "videos", id, "likes", me);
+  const paintL = () => { likeB.textContent = (liked ? "♥ " : "♡ ") + nl; };
+  const paintC = () => { comB.textContent = "💬 " + nc; };
+  paintL(); paintC();
+  likeB.onclick = async () => {
+    try { if (liked) { await deleteDoc(lref); nl--; } else { await setDoc(lref, { at: serverTimestamp() }); nl++; } liked = !liked; paintL(); }
+    catch (e) { console.warn(e); }
+  };
+  cnt(["videos", id, "likes"]).then(n => { nl = n; paintL(); }).catch(() => {});
+  getDoc(lref).then(x => { liked = x.exists(); paintL(); }).catch(() => {});
+  cnt(["videos", id, "comments"]).then(n => { nc = n; paintC(); }).catch(() => {});
+  bar.append(likeB, comB);
+
+  if (v.uid && v.uid !== me) {
+    const folB = mk(), fref = doc(db, "users", v.uid, "followers", me);
+    let fol = false, nf = 0;
+    const paintF = () => { folB.textContent = fol ? T[lang].unfol : T[lang].fol; a.textContent = v.author + " · " + nf + " " + T[lang].flw; };
+    paintF();
+    folB.onclick = async () => {
+      try { if (fol) { await deleteDoc(fref); nf--; } else { await setDoc(fref, { at: serverTimestamp() }); nf++; } fol = !fol; paintF(); }
+      catch (e) { console.warn(e); }
+    };
+    getDoc(fref).then(x => { fol = x.exists(); paintF(); }).catch(() => {});
+    cnt(["users", v.uid, "followers"]).then(n => { nf = n; paintF(); }).catch(() => {});
+    bar.append(folB);
+  }
+
+  const list = document.createElement("div"), row = document.createElement("div"), inp = document.createElement("input"), send = mk();
+  row.className = "row"; inp.type = "text"; inp.maxLength = 300; inp.placeholder = T[lang].cph; send.textContent = T[lang].csend;
+  row.append(inp, send); cm.append(list, row);
+  const load = async () => {
+    const q = await getDocs(query(collection(db, "videos", id, "comments"), orderBy("createdAt", "desc"), limit(20)));
+    list.textContent = "";
+    q.forEach(x => { const p = document.createElement("p"); p.textContent = x.data().author + ": " + x.data().text; list.append(p); });
+  };
+  comB.onclick = () => { cm.hidden = !cm.hidden; if (!cm.hidden) load().catch(console.warn); };
+  send.onclick = async () => {
+    const t = inp.value.trim();
+    if (!t) return;
+    try {
+      await addDoc(collection(db, "videos", id, "comments"), { uid: me, author: user.displayName || user.email.split("@")[0], text: t.slice(0, 300), createdAt: serverTimestamp() });
+      inp.value = ""; nc++; paintC(); await load();
+    } catch (e) { console.warn(e); }
+  };
+  c.append(bar, cm);
+}
+
 async function loadFeed() {
   const box = $("feed");
   try {
@@ -245,7 +308,7 @@ async function loadFeed() {
       vid.src = v.url;
       const t = document.createElement("p"); t.className = "vt"; t.textContent = v.title;
       const a = document.createElement("p"); a.className = "va"; a.textContent = v.author;
-      c.append(vid, t, a); box.append(c);
+      c.append(vid, t, a); decorate(c, d.id, v, a); box.append(c);
     });
   } catch (e) { box.textContent = T[lang].m.feed + " [" + (e.code || e.message) + "]"; }
 }
