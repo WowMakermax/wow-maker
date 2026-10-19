@@ -58,6 +58,21 @@ summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weig
 .cm .row button{min-height:48px;padding:0 14px;border:0;border-radius:10px;background:var(--green);color:#fff;font:inherit;cursor:pointer}
 #ftabs{margin:10px 0 0}
 #ftabs button.on{background:var(--ink);color:#fff}
+#home{padding-bottom:76px}
+#nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);background:#fff;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:20}
+#nav button{min-height:58px;border:0;background:transparent;font:inherit;font-size:12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer}
+#nav button b{font-size:20px;line-height:1}
+#nav button.on{color:var(--green-d);font-weight:700}
+#shorts{height:calc(100dvh - 190px);min-height:380px;overflow-y:auto;scroll-snap-type:y mandatory;border-radius:16px;background:#000}
+.short{height:100%;position:relative;scroll-snap-align:start;scroll-snap-stop:always}
+.short video{width:100%;height:100%;max-height:none;object-fit:contain;border-radius:0}
+.short .vt,.short .va{position:absolute;left:14px;right:96px;margin:0;color:#fff;text-shadow:0 1px 3px #000}
+.short .vt{bottom:78px}
+.short .va:not(.st){bottom:50px}
+.short .st{bottom:24px;font-size:13px}
+.short .bar{position:absolute;right:8px;bottom:20px;flex-direction:column;flex-wrap:nowrap;margin:0}
+.short .bar button{background:rgba(0,0,0,.55);color:#fff;border-color:#fff;min-width:74px}
+.short .cm{position:absolute;left:0;right:0;bottom:0;background:#fff;color:var(--ink);padding:14px;max-height:62%;overflow:auto;z-index:5;border-radius:16px 16px 0 0;margin:0}
 </style>
 </head>
 <body>
@@ -88,17 +103,9 @@ summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weig
   </section>
 
   <section id="home" hidden>
-    <div class="card">
-      <p class="hi"><span data-i="welcome"></span> <span id="who"></span></p>
-      <details>
-        <summary data-i="nameSum"></summary>
-        <form id="nameform" novalidate>
-          <label for="newname" data-i="nameLabel"></label>
-          <input id="newname" type="text" maxlength="40" autocomplete="name">
-          <button class="out" id="namebtn" type="submit" data-i="nameBtn"></button>
-          <p class="msg" id="namemsg" role="alert"></p>
-        </form>
-      </details>
+    <div class="pg" id="pg-home"><h2 data-i="feed" style="margin-top:4px"></h2><div id="feed"></div></div>
+    <div class="pg" id="pg-shorts" hidden><div id="shorts"></div></div>
+    <div class="pg" id="pg-up" hidden><div class="card">
       <form id="upform" class="up" novalidate>
         <h2 data-i="upTitle"></h2>
         <label for="vtitle" data-i="vtitle"></label>
@@ -109,11 +116,26 @@ summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weig
         <div class="prog"><i id="bar"></i></div>
         <p class="msg" id="upmsg" role="alert"></p>
       </form>
+    </div></div>
+    <div class="pg" id="pg-me" hidden><div class="card">
+      <p class="hi"><span data-i="welcome"></span> <span id="who"></span></p>
+      <details>
+        <summary data-i="nameSum"></summary>
+        <form id="nameform" novalidate>
+          <label for="newname" data-i="nameLabel"></label>
+          <input id="newname" type="text" maxlength="40" autocomplete="name">
+          <button class="out" id="namebtn" type="submit" data-i="nameBtn"></button>
+          <p class="msg" id="namemsg" role="alert"></p>
+        </form>
+      </details>
       <button class="out" id="logout" type="button" data-i="logout"></button>
-    </div>
-    <h2 data-i="feed"></h2>
-    <div class="bar" id="ftabs"><button type="button" class="on" data-k="" data-i="tabAll"></button><button type="button" data-k="short" data-i="tabShorts"></button><button type="button" data-k="long" data-i="tabLong"></button></div>
-    <div id="feed"></div>
+    </div></div>
+    <nav id="nav">
+      <button type="button" data-p="home" class="on"><b>🏠</b><span data-i="navHome"></span></button>
+      <button type="button" data-p="shorts"><b>⚡</b><span data-i="navShorts"></span></button>
+      <button type="button" data-p="up"><b>＋</b><span data-i="navUp"></span></button>
+      <button type="button" data-p="me"><b>👤</b><span data-i="navMe"></span></button>
+    </nav>
   </section>
 </main>
 
@@ -142,7 +164,7 @@ const T = {
     goSignup: "اکاؤنٹ بنائیں", goLogin: "لاگ اِن کریں", logout: "لاگ آؤٹ",
     welcome: "خوش آمدید،", soon: "ویڈیو اپ لوڈ اور فیڈ جلد آ رہے ہیں۔",
     other: "English",
-    views: "ویوز", tabAll: "سب", tabShorts: "شارٹس", tabLong: "ویڈیوز", share: "شیئر", copied: "لنک کاپی ہو گیا", flw1: "سبسکرائبر", fol: "سبسکرائب کریں", unfol: "سبسکرائب ہیں", flw: "سبسکرائبرز", cph: "تبصرہ لکھیں…", csend: "بھیجیں",
+    views: "ویوز", navHome: "ہوم", navShorts: "شارٹس", navUp: "اپ لوڈ", navMe: "میرا", tabAll: "سب", tabShorts: "شارٹس", tabLong: "ویڈیوز", share: "شیئر", copied: "لنک کاپی ہو گیا", flw1: "سبسکرائبر", fol: "سبسکرائب کریں", unfol: "سبسکرائب ہیں", flw: "سبسکرائبرز", cph: "تبصرہ لکھیں…", csend: "بھیجیں",
     nameSum: "اپنا نام بدلیں", nameLabel: "نیا نام", nameBtn: "نام محفوظ کریں",
     upTitle: "ویڈیو اپ لوڈ کریں", vtitle: "ویڈیو کا عنوان", choose: "ویڈیو چنیں (زیادہ سے زیادہ 50 MB)", upBtn: "اپ لوڈ کریں",
     feed: "تازہ ویڈیوز", empty: "ابھی کوئی ویڈیو نہیں۔ پہلی ویڈیو آپ ڈالیں!",
@@ -167,7 +189,7 @@ const T = {
     goSignup: "Create account", goLogin: "Log in", logout: "Log out",
     welcome: "Welcome,", soon: "Video upload and the feed are coming soon.",
     other: "اردو",
-    views: "views", tabAll: "All", tabShorts: "Shorts", tabLong: "Videos", share: "Share", copied: "Link copied", flw1: "subscriber", fol: "Subscribe", unfol: "Subscribed", flw: "subscribers", cph: "Write a comment…", csend: "Send",
+    views: "views", navHome: "Home", navShorts: "Shorts", navUp: "Upload", navMe: "Me", tabAll: "All", tabShorts: "Shorts", tabLong: "Videos", share: "Share", copied: "Link copied", flw1: "subscriber", fol: "Subscribe", unfol: "Subscribed", flw: "subscribers", cph: "Write a comment…", csend: "Send",
     nameSum: "Change my name", nameLabel: "New name", nameBtn: "Save name",
     upTitle: "Upload a video", vtitle: "Video title", choose: "Choose a video (max 50 MB)", upBtn: "Upload",
     feed: "Latest videos", empty: "No videos yet. Be the first!",
@@ -303,7 +325,7 @@ function decorate(c, id, v, a, vid) {
       inp.value = ""; nc++; paintC(); await load();
     } catch (e) { console.warn(e); }
   };
-  const st = document.createElement("p"); st.className = "va";
+  const st = document.createElement("p"); st.className = "va st";
   const fmt = x => x >= 3600 ? (x / 3600).toFixed(1) + " h" : Math.round(x / 60) + " min";
   getAggregateFromServer(collection(db, "videos", id, "viewers"), { n: count(), t: sum("seconds") })
     .then(r => { st.textContent = r.data().n + " " + T[lang].views + " · " + fmt(r.data().t || 0); }).catch(() => {});
@@ -320,30 +342,44 @@ function decorate(c, id, v, a, vid) {
   c.append(st, bar, cm);
 }
 
-let feedKind = "", cache = [];
-function renderFeed() {
-  const box = $("feed");
+let cache = [];
+const obs = new IntersectionObserver(es => es.forEach(e => {
+  const v = e.target._v;
+  if (!v) return;
+  if (e.isIntersecting) v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
+  else v.pause();
+}), { threshold: 0.7 });
+
+function build(box, kind) {
   box.textContent = "";
-  const items = cache.filter(d => !feedKind || (d.data().kind || "long") === feedKind);
-  if (!items.length) { const p = document.createElement("p"); p.className = "sub"; p.textContent = T[lang].empty; box.append(p); return; }
+  const items = cache.filter(d => (d.data().kind || "long") === kind);
+  if (!items.length) { const p = document.createElement("p"); p.className = "sub"; p.style.color = kind === "short" ? "#fff" : ""; p.style.padding = "14px"; p.textContent = T[lang].empty; box.append(p); return; }
   items.forEach(d => {
     const v = d.data(), c = document.createElement("div"), vid = document.createElement("video");
-    c.className = "card vid"; c.id = "v-" + d.id;
-    vid.controls = true; vid.playsInline = true; vid.preload = "none";
+    c.id = "v-" + d.id; c.className = kind === "short" ? "short" : "card vid";
+    vid.playsInline = true; vid.preload = kind === "short" ? "metadata" : "none";
     vid.poster = v.url.replace("/upload/", "/upload/so_0,w_480,f_jpg/").replace(/\.\w+$/, ".jpg");
     vid.src = v.url;
-    const t = document.createElement("p"); t.className = "vt"; t.textContent = (v.kind === "short" ? "⚡ " : "") + v.title;
+    if (kind === "short") { vid.loop = true; vid.onclick = () => (vid.paused ? vid.play() : vid.pause()); c._v = vid; obs.observe(c); }
+    else vid.controls = true;
+    const t = document.createElement("p"); t.className = "vt"; t.textContent = v.title;
     const a = document.createElement("p"); a.className = "va"; a.textContent = v.author;
     c.append(vid, t, a); decorate(c, d.id, v, a, vid); box.append(c);
   });
-  const h = location.hash.slice(1), el = h && document.getElementById("v-" + h);
-  if (el) el.scrollIntoView();
 }
-document.querySelectorAll("#ftabs button").forEach(b => b.onclick = () => {
-  feedKind = b.dataset.k;
-  document.querySelectorAll("#ftabs button").forEach(x => x.classList.toggle("on", x === b));
-  renderFeed();
-});
+
+function show(p) {
+  document.querySelectorAll(".pg").forEach(x => { x.hidden = x.id !== "pg-" + p; });
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.p === p));
+  document.querySelectorAll("video").forEach(v => v.pause());
+}
+document.querySelectorAll("#nav button").forEach(b => b.onclick = () => show(b.dataset.p));
+
+function renderFeed() {
+  build($("feed"), "long"); build($("shorts"), "short");
+  const h = location.hash.slice(1), el = h && document.getElementById("v-" + h);
+  if (el) { show(el.closest(".pg").id.slice(3)); el.scrollIntoView(); }
+}
 
 async function loadFeed() {
   try {
