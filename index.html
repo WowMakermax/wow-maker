@@ -56,6 +56,8 @@ summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weig
 .cm .row{display:flex;gap:8px;margin-top:8px}
 .cm .row input{flex:1;min-width:0}
 .cm .row button{min-height:48px;padding:0 14px;border:0;border-radius:10px;background:var(--green);color:#fff;font:inherit;cursor:pointer}
+#ftabs{margin:10px 0 0}
+#ftabs button.on{background:var(--ink);color:#fff}
 </style>
 </head>
 <body>
@@ -110,6 +112,7 @@ summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weig
       <button class="out" id="logout" type="button" data-i="logout"></button>
     </div>
     <h2 data-i="feed"></h2>
+    <div class="bar" id="ftabs"><button type="button" class="on" data-k="" data-i="tabAll"></button><button type="button" data-k="short" data-i="tabShorts"></button><button type="button" data-k="long" data-i="tabLong"></button></div>
     <div id="feed"></div>
   </section>
 </main>
@@ -117,7 +120,7 @@ summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weig
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp, updateDoc, collection, addDoc, getDocs, query, orderBy, limit, getDoc, deleteDoc, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp, updateDoc, collection, addDoc, getDocs, query, orderBy, limit, getDoc, deleteDoc, getCountFromServer, getAggregateFromServer, count, sum } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyB7iISoCwT7H2HHFG13OF1-SEW4z4DQPPE",
@@ -139,7 +142,7 @@ const T = {
     goSignup: "اکاؤنٹ بنائیں", goLogin: "لاگ اِن کریں", logout: "لاگ آؤٹ",
     welcome: "خوش آمدید،", soon: "ویڈیو اپ لوڈ اور فیڈ جلد آ رہے ہیں۔",
     other: "English",
-    fol: "فالو کریں", unfol: "فالو کر رہے ہیں", flw: "فالوورز", cph: "تبصرہ لکھیں…", csend: "بھیجیں",
+    views: "ویوز", tabAll: "سب", tabShorts: "شارٹس", tabLong: "ویڈیوز", share: "شیئر", copied: "لنک کاپی ہو گیا", flw1: "سبسکرائبر", fol: "سبسکرائب کریں", unfol: "سبسکرائب ہیں", flw: "سبسکرائبرز", cph: "تبصرہ لکھیں…", csend: "بھیجیں",
     nameSum: "اپنا نام بدلیں", nameLabel: "نیا نام", nameBtn: "نام محفوظ کریں",
     upTitle: "ویڈیو اپ لوڈ کریں", vtitle: "ویڈیو کا عنوان", choose: "ویڈیو چنیں (زیادہ سے زیادہ 50 MB)", upBtn: "اپ لوڈ کریں",
     feed: "تازہ ویڈیوز", empty: "ابھی کوئی ویڈیو نہیں۔ پہلی ویڈیو آپ ڈالیں!",
@@ -164,7 +167,7 @@ const T = {
     goSignup: "Create account", goLogin: "Log in", logout: "Log out",
     welcome: "Welcome,", soon: "Video upload and the feed are coming soon.",
     other: "اردو",
-    fol: "Follow", unfol: "Following", flw: "followers", cph: "Write a comment…", csend: "Send",
+    views: "views", tabAll: "All", tabShorts: "Shorts", tabLong: "Videos", share: "Share", copied: "Link copied", flw1: "subscriber", fol: "Subscribe", unfol: "Subscribed", flw: "subscribers", cph: "Write a comment…", csend: "Send",
     nameSum: "Change my name", nameLabel: "New name", nameBtn: "Save name",
     upTitle: "Upload a video", vtitle: "Video title", choose: "Choose a video (max 50 MB)", upBtn: "Upload",
     feed: "Latest videos", empty: "No videos yet. Be the first!",
@@ -243,7 +246,7 @@ const say = (k, ok) => { const m = $("upmsg"); m.className = "msg" + (ok ? " ok"
 const cnt = async p => (await getCountFromServer(collection(db, ...p))).data().count;
 const mk = () => { const b = document.createElement("button"); b.type = "button"; return b; };
 
-function decorate(c, id, v, a) {
+function decorate(c, id, v, a, vid) {
   const me = user.uid, bar = document.createElement("div"), likeB = mk(), comB = mk(), cm = document.createElement("div");
   bar.className = "bar"; cm.className = "cm"; cm.hidden = true;
   let liked = false, nl = 0, nc = 0;
@@ -258,12 +261,21 @@ function decorate(c, id, v, a) {
   cnt(["videos", id, "likes"]).then(n => { nl = n; paintL(); }).catch(() => {});
   getDoc(lref).then(x => { liked = x.exists(); paintL(); }).catch(() => {});
   cnt(["videos", id, "comments"]).then(n => { nc = n; paintC(); }).catch(() => {});
-  bar.append(likeB, comB);
+  const shB = mk();
+  shB.textContent = "↗ " + T[lang].share;
+  shB.onclick = async () => {
+    const url = location.origin + location.pathname + "#" + id;
+    try {
+      if (navigator.share) await navigator.share({ title: v.title, text: v.title + " — Wow Maker", url });
+      else { await navigator.clipboard.writeText(url); shB.textContent = "✓ " + T[lang].copied; }
+    } catch (e) { console.warn(e); }
+  };
+  bar.append(likeB, comB, shB);
 
   if (v.uid && v.uid !== me) {
     const folB = mk(), fref = doc(db, "users", v.uid, "followers", me);
     let fol = false, nf = 0;
-    const paintF = () => { folB.textContent = fol ? T[lang].unfol : T[lang].fol; a.textContent = v.author + " · " + nf + " " + T[lang].flw; };
+    const paintF = () => { folB.textContent = fol ? T[lang].unfol : T[lang].fol; a.textContent = v.author + " · " + nf + " " + (nf === 1 ? T[lang].flw1 : T[lang].flw); };
     paintF();
     folB.onclick = async () => {
       try { if (fol) { await deleteDoc(fref); nf--; } else { await setDoc(fref, { at: serverTimestamp() }); nf++; } fol = !fol; paintF(); }
@@ -291,26 +303,53 @@ function decorate(c, id, v, a) {
       inp.value = ""; nc++; paintC(); await load();
     } catch (e) { console.warn(e); }
   };
-  c.append(bar, cm);
+  const st = document.createElement("p"); st.className = "va";
+  const fmt = x => x >= 3600 ? (x / 3600).toFixed(1) + " h" : Math.round(x / 60) + " min";
+  getAggregateFromServer(collection(db, "videos", id, "viewers"), { n: count(), t: sum("seconds") })
+    .then(r => { st.textContent = r.data().n + " " + T[lang].views + " · " + fmt(r.data().t || 0); }).catch(() => {});
+  const wref = doc(db, "videos", id, "viewers", me);
+  let base = 0, last = 0, secs = 0, saved = 0;
+  getDoc(wref).then(x => { if (x.exists()) base = x.data().seconds || 0; }).catch(() => {});
+  const flush = async () => {
+    if (secs < 3 || secs === saved) return;
+    saved = secs;
+    try { await setDoc(wref, { seconds: Math.floor(base + secs), at: serverTimestamp() }); } catch (e) { console.warn(e); }
+  };
+  vid.ontimeupdate = () => { const x = vid.currentTime; if (!vid.paused && x > last && x - last < 2) secs += x - last; last = x; if (secs - saved >= 15) flush(); };
+  vid.onpause = flush; vid.onended = flush;
+  c.append(st, bar, cm);
 }
 
-async function loadFeed() {
+let feedKind = "", cache = [];
+function renderFeed() {
   const box = $("feed");
+  box.textContent = "";
+  const items = cache.filter(d => !feedKind || (d.data().kind || "long") === feedKind);
+  if (!items.length) { const p = document.createElement("p"); p.className = "sub"; p.textContent = T[lang].empty; box.append(p); return; }
+  items.forEach(d => {
+    const v = d.data(), c = document.createElement("div"), vid = document.createElement("video");
+    c.className = "card vid"; c.id = "v-" + d.id;
+    vid.controls = true; vid.playsInline = true; vid.preload = "none";
+    vid.poster = v.url.replace("/upload/", "/upload/so_0,w_480,f_jpg/").replace(/\.\w+$/, ".jpg");
+    vid.src = v.url;
+    const t = document.createElement("p"); t.className = "vt"; t.textContent = (v.kind === "short" ? "⚡ " : "") + v.title;
+    const a = document.createElement("p"); a.className = "va"; a.textContent = v.author;
+    c.append(vid, t, a); decorate(c, d.id, v, a, vid); box.append(c);
+  });
+  const h = location.hash.slice(1), el = h && document.getElementById("v-" + h);
+  if (el) el.scrollIntoView();
+}
+document.querySelectorAll("#ftabs button").forEach(b => b.onclick = () => {
+  feedKind = b.dataset.k;
+  document.querySelectorAll("#ftabs button").forEach(x => x.classList.toggle("on", x === b));
+  renderFeed();
+});
+
+async function loadFeed() {
   try {
-    const snap = await getDocs(query(collection(db, "videos"), orderBy("createdAt", "desc"), limit(20)));
-    box.textContent = "";
-    if (snap.empty) { const p = document.createElement("p"); p.className = "sub"; p.textContent = T[lang].empty; box.append(p); return; }
-    snap.forEach(d => {
-      const v = d.data(), c = document.createElement("div"), vid = document.createElement("video");
-      c.className = "card vid";
-      vid.controls = true; vid.playsInline = true; vid.preload = "none";
-      vid.poster = v.url.replace("/upload/", "/upload/so_0,w_480,f_jpg/").replace(/\.\w+$/, ".jpg");
-      vid.src = v.url;
-      const t = document.createElement("p"); t.className = "vt"; t.textContent = v.title;
-      const a = document.createElement("p"); a.className = "va"; a.textContent = v.author;
-      c.append(vid, t, a); decorate(c, d.id, v, a); box.append(c);
-    });
-  } catch (e) { box.textContent = T[lang].m.feed + " [" + (e.code || e.message) + "]"; }
+    const snap = await getDocs(query(collection(db, "videos"), orderBy("createdAt", "desc"), limit(30)));
+    cache = snap.docs; renderFeed();
+  } catch (e) { $("feed").textContent = T[lang].m.feed + " [" + (e.code || e.message) + "]"; }
 }
 
 $("upform").onsubmit = ev => {
@@ -329,7 +368,7 @@ $("upform").onsubmit = ev => {
     try {
       const r = JSON.parse(x.responseText);
       if (x.status !== 200 || !r.secure_url) throw new Error((r.error && r.error.message) || "upload");
-      await addDoc(collection(db, "videos"), { uid: user.uid, author: user.displayName || user.email.split("@")[0], title, url: r.secure_url, duration: r.duration || 0, views: 0, createdAt: serverTimestamp() });
+      await addDoc(collection(db, "videos"), { uid: user.uid, author: user.displayName || user.email.split("@")[0], title, url: r.secure_url, duration: r.duration || 0, kind: ((r.duration || 0) <= 180 && (r.height || 0) >= (r.width || 0)) ? "short" : "long", views: 0, createdAt: serverTimestamp() });
       $("upform").reset(); $("bar").style.width = "0"; say("done", true); loadFeed();
     } catch (e) { console.warn(e); say("fail"); $("upmsg").textContent += " [" + String(e.code || e.message).slice(0, 70) + "]"; }
     $("upbtn").disabled = false;
